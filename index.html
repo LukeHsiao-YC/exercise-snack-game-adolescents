@@ -2,445 +2,630 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Snack Move | 職場動滋卡</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坐很久了嗎？想吃東西嗎？來點運動點心吧!</title>
     
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <!-- 1. 引入 Tailwind CSS (樣式) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 2. 引入 React 和 ReactDOM (核心) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- 3. 引入 Babel (編譯器) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-in { animation: fadeIn 0.5s ease-out forwards; }
         
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f3f4f6;
-            -webkit-tap-highlight-color: transparent;
-        }
+        @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .slide-in-from-right { animation: slideInRight 0.3s ease-out forwards; }
 
-        /* Card Flip Animation */
-        .perspective-1000 {
-            perspective: 1000px;
-        }
-        .transform-style-3d {
-            transform-style: preserve-3d;
-        }
-        .backface-hidden {
-            backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
-        }
-        
-        /* Pulse Animation for Timer */
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        .animate-heartbeat {
-            animation: heartbeat 1s infinite;
-        }
-
-        /* Custom Scrollbar for Card List */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        @keyframes slideInBottom { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .slide-in-from-bottom { animation: slideInBottom 0.3s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="bg-yellow-50">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        const { Trophy, Timer, Zap, Home, Briefcase, User, Info, CheckCircle, RotateCcw, Star, Flame, Battery, Shield, Brain, Heart, ChevronRight, X } = lucide;
 
-        // --- 遊戲數據資料庫 (Game Database) ---
-        const EXERCISE_DB = [
-            // A類: 爆發有氧
-            { id: 'a1', title: '極速樓梯王', type: 'A', duration: 45, intensity: 3, tags: ['stairs', 'sweat'], desc: '全速衝刺爬樓梯，手不扶扶手。', buff: '心肺提升', icon: 'Heart' },
-            { id: 'a2', title: '開合跳風暴', type: 'A', duration: 60, intensity: 2, tags: ['noise', 'sweat'], desc: '快速開合跳，保持呼吸節奏。', buff: '燃脂引擎', icon: 'Flame' },
-            { id: 'a3', title: '高抬腿衝刺', type: 'A', duration: 30, intensity: 3, tags: ['noise', 'sweat'], desc: '原地跑步，膝蓋抬高至腰部。', buff: '心肺提升', icon: 'Heart' },
-            { id: 'a4', title: '波比跳', type: 'A', duration: 30, intensity: 3, tags: ['floor', 'sweat', 'noise'], desc: '深蹲跳+伏地挺身，全身燃燒。', buff: '全身強化', icon: 'Flame' },
-            { id: 'a5', title: '登山者式', type: 'A', duration: 40, intensity: 3, tags: ['floor', 'sweat'], desc: '雙手撐地，雙腳交替向胸口跑動。', buff: '核心燃燒', icon: 'Zap' },
-            { id: 'a6', title: '空氣跳繩', type: 'A', duration: 60, intensity: 2, tags: ['noise'], desc: '模擬跳繩動作，輕快彈跳。', buff: '骨質強化', icon: 'Zap' },
-            { id: 'a7', title: '滑冰者跳躍', type: 'A', duration: 45, intensity: 2, tags: ['sweat', 'noise'], desc: '左右橫向跳躍，像溜冰選手一樣。', buff: '敏捷提升', icon: 'Zap' },
-            
-            // B類: 肌力強化
-            { id: 'b1', title: '辦公桌伏地挺身', type: 'B', duration: 60, intensity: 2, tags: ['office', 'quiet'], desc: '手撐桌緣，身體呈直線做伏地挺身。', buff: '上肢肌力', icon: 'Shield' },
-            { id: 'b2', title: '起立坐下機關槍', type: 'B', duration: 60, intensity: 2, tags: ['office', 'quiet'], desc: '快速坐下再彈起，屁股輕觸椅面即可。', buff: '大腦覺醒', icon: 'Brain' },
-            { id: 'b3', title: '相撲深蹲', type: 'B', duration: 60, intensity: 2, tags: ['office', 'quiet'], desc: '雙腳寬站距，背挺直下蹲。', buff: '下肢肌力', icon: 'Shield' },
-            { id: 'b4', title: '電話提踵', type: 'B', duration: 60, intensity: 1, tags: ['office', 'stealth'], desc: '墊腳尖再放下，重複動作不落地。', buff: '靜脈幫浦', icon: 'Heart' },
-            { id: 'b5', title: '弓箭步下蹲', type: 'B', duration: 45, intensity: 2, tags: ['office', 'quiet'], desc: '左右腳交替向前跨步下蹲。', buff: '腿部線條', icon: 'Shield' },
-            { id: 'b6', title: '椅子臂屈伸', type: 'B', duration: 45, intensity: 2, tags: ['office'], desc: '背對椅子雙手撐椅面，身體下沉再推起。', buff: '蝴蝶袖殺手', icon: 'Shield' },
-            { id: 'b7', title: '單腳硬舉', type: 'B', duration: 60, intensity: 2, tags: ['office', 'quiet'], desc: '單腳站立，身體前傾保持平衡。', buff: '核心平衡', icon: 'Brain' },
+        // --- 內建圖示元件 ---
+        const IconBase = ({ children, size = 24, className = "", ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className} 
+                {...props}
+            >
+                {children}
+            </svg>
+        );
 
-            // C類: 靜態破壞者
-            { id: 'c1', title: '隱形椅子(靠牆)', type: 'C', duration: 45, intensity: 2, tags: ['office', 'stealth'], desc: '背靠牆半蹲，大腿與地面平行。', buff: '代謝防禦', icon: 'Shield' },
-            { id: 'c2', title: '手臂畫圈圈', type: 'C', duration: 60, intensity: 1, tags: ['office', 'stealth'], desc: '雙臂平舉，快速畫小圓圈。', buff: '肩頸放鬆', icon: 'RotateCcw' },
-            { id: 'c3', title: '快速步行', type: 'C', duration: 120, intensity: 2, tags: ['office', 'move'], desc: '以最快競走速度繞行辦公室一圈。', buff: '腦部血流', icon: 'Brain' },
-            { id: 'c4', title: '擴胸伸展', type: 'C', duration: 40, intensity: 1, tags: ['office', 'stealth'], desc: '雙手背後交握，向後延伸打開胸腔。', buff: '姿勢矯正', icon: 'RotateCcw' },
-            { id: 'c5', title: '坐姿提膝', type: 'C', duration: 60, intensity: 1, tags: ['office', 'stealth'], desc: '坐椅上，收腹將膝蓋抬向胸口。', buff: '腹部喚醒', icon: 'Zap' },
-            { id: 'c6', title: '聳肩運動', type: 'C', duration: 40, intensity: 1, tags: ['office', 'stealth'], desc: '用力聳肩找耳朵，再瞬間放鬆。', buff: '釋放壓力', icon: 'RotateCcw' }
+        const Icons = {
+            Cookie: (props) => <IconBase {...props}><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></IconBase>,
+            History: (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></IconBase>,
+            Lightbulb: (props) => <IconBase {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></IconBase>,
+            Activity: (props) => <IconBase {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconBase>,
+            Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-2.246-3.69-2.246-3.69a10 10 0 1 0 5.432 7.72C12.392 12.012 11.668 11.026 11 10c-.575-.92-1.378-2.29-1.378-2.29s1.378 1.37 1.378 2.29c.668 1.026 1.392 2.012 2.186 3.03a10.004 10.004 0 0 0 5.432-7.72c0 0-1.174 1.547-2.246 3.69-.5 1-1 1.62-1 3a2.5 2.5 0 0 0 2.5 2.5z"/></IconBase>,
+            Brain: (props) => <IconBase {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></IconBase>,
+            Briefcase: (props) => <IconBase {...props}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></IconBase>,
+            Home: (props) => <IconBase {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>,
+            Sparkles: (props) => <IconBase {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 19v2"/><path d="M21 21h-2"/></IconBase>,
+            ChevronRight: (props) => <IconBase {...props}><path d="m9 18 6-6-6-6"/></IconBase>,
+            ArrowLeft: (props) => <IconBase {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></IconBase>,
+            Clock: (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconBase>,
+            Timer: (props) => <IconBase {...props}><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></IconBase>,
+            CheckCircle: (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>,
+            RotateCcw: (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></IconBase>,
+            Trophy: (props) => <IconBase {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>,
+            Calendar: (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>,
+            BookOpen: (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>,
+            Gamepad2: (props) => <IconBase {...props}><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></IconBase>,
+            Shirt: (props) => <IconBase {...props}><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></IconBase>,
+        };
+
+        const { 
+            Cookie, History, Lightbulb, Activity, Flame, Brain, Briefcase, Home, Sparkles, 
+            ChevronRight, ArrowLeft, Clock, Timer, CheckCircle, RotateCcw, Trophy, Calendar,
+            BookOpen, Gamepad2, Shirt
+        } = Icons;
+
+        // --- 資料庫設定 (國中生版本) ---
+        const SNACK_BENEFITS = [
+            "動 20 秒就能讓大腦覺醒，等等考試猜題都猜對（誤）。",
+            "坐太久屁股會變大，起來動一下救救你的臀型。",
+            "這比喝手搖杯還能讓你心情好，而且是免費的。",
+            "別再滑手機了，讓眼睛休息一下，順便練個線條。",
+            "你知道嗎？肌肉量多的人，躺著不動燃燒的熱量也比較多。",
+            "現在動一動，等等午休趴著睡才不會腳麻。",
+            "老師說要「動」腦，但沒說身體不能動啊！",
+            "練好體力，不管是打球還是搶福利社麵包都贏在起跑點。"
         ];
 
-        // --- 音效處理 ---
-        const playBeep = () => {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContext) return;
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'sine';
-            osc.frequency.value = 880; // A5
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+        const MODES = {
+            OFFICE: { 
+                id: 'office', 
+                label: '學校/補習班', 
+                icon: <BookOpen size={24} />, 
+                desc: '老師在看，低調練功', 
+                color: 'text-blue-600 bg-blue-50 border-blue-100 hover:border-blue-300',
+                theme: 'blue'
+            },
+            HOME: { 
+                id: 'home', 
+                label: '在家狂暴模式', 
+                icon: <Gamepad2 size={24} />, 
+                desc: '沒人看，直接開大絕', 
+                color: 'text-red-600 bg-red-50 border-red-100 hover:border-red-300',
+                theme: 'orange'
+            },
+            FORMAL: { 
+                id: 'formal', 
+                label: '穿制服/裙子', 
+                icon: <Shirt size={24} />, 
+                desc: '動作小一點，避免尷尬', 
+                color: 'text-purple-600 bg-purple-50 border-purple-100 hover:border-purple-300',
+                theme: 'purple'
+            }
         };
 
-        // --- 主程式元件 ---
-        const App = () => {
-            // State
-            const [view, setView] = useState('dashboard'); // dashboard, gacha, result, active, success
-            const [userStats, setUserStats] = useState({ level: 1, xp: 0, dailyCount: 0, streak: 1, lastLogin: new Date().toDateString() });
-            const [currentCard, setCurrentCard] = useState(null);
-            const [timer, setTimer] = useState(0);
-            const [isTimerRunning, setIsTimerRunning] = useState(false);
-            const [filterMode, setFilterMode] = useState('office'); // office, home, hardcore
-            const [showFlip, setShowFlip] = useState(false);
+        const EXERCISE_DB = [
+            { 
+                id: 'b3', type: 'B', title: '上課偷練小腿', rarity: 'N',
+                desc: '坐著或站著都可以，腳跟反覆提起來、放下去。', 
+                modes: ['office', 'formal', 'home'],
+                coach_say: '老師以為你在發呆，其實你在練神腿！',
+                science: '這是你的「第二顆心臟」，幫你把血液打回心臟，腳比較不會腫。',
+                duration: 60 
+            },
+            { 
+                id: 'c3', type: 'C', title: '雙手畫圈圈', rarity: 'N',
+                desc: '雙手平舉，像螺絲起子一樣轉圈圈，正轉反轉都要。', 
+                modes: ['office', 'formal', 'home'],
+                coach_say: '寫考卷寫到手斷掉？轉一下啦，超爽的！',
+                science: '讓肩膀關節動一動，預防以後變成五十肩（雖然你還早）。',
+                duration: 60 
+            },
+            { 
+                id: 'c9', type: 'C', title: '不管我也沒差', rarity: 'N',
+                desc: '肩膀用力聳起來找耳朵，停3秒，然後瞬間放鬆。', 
+                modes: ['office', 'formal', 'home'],
+                coach_say: '把段考壓力全部丟到地板上！誰管他啊！',
+                science: '這叫「漸進式肌肉放鬆」，能強制讓緊繃的肩膀鬆開。',
+                duration: 60 
+            },
+            { 
+                id: 'a8', type: 'A', title: '原地超慢跑', rarity: 'N',
+                desc: '在原地假裝跑步，速度慢到像是在散步，保持微笑。', 
+                modes: ['office', 'home'],
+                coach_say: '保持微笑！這是一種休息也是運動，假裝自己很忙。',
+                science: '這能提升細胞運用氧氣的能力，讓你體力變好又不傷膝蓋。',
+                duration: 60 
+            },
+            { 
+                id: 'a9', type: 'A', title: '膝下擊掌', rarity: 'R',
+                desc: '抬高一腳膝蓋，雙手在該膝蓋下方拍手，左右輪流。', 
+                modes: ['home'], 
+                coach_say: '腿抬高！用力拍下去！像個過動兒一樣動起來！',
+                science: '結合抬腿跟核心用力，心跳會變快，精神會變好。',
+                duration: 60 
+            },
+            { 
+                id: 'b11', type: 'B', title: '弓箭步蹲', rarity: 'SR',
+                desc: '一腳前一腳後，身體垂直蹲下去，後腳膝蓋快碰到地再起來。', 
+                modes: ['office', 'home'],
+                coach_say: '練大腿線條用的，穿短褲/短裙會很好看喔！',
+                science: '訓練平衡感跟大腿力量，讓你站得更穩。',
+                duration: 60 
+            },
+            { 
+                id: 'a1', type: 'A', title: '樓梯衝刺', rarity: 'SR',
+                desc: '全速衝刺爬樓梯（約3層樓），小心不要跌倒。', 
+                modes: ['office', 'home'],
+                coach_say: '拿出你去福利社搶麵包的速度！衝啊！',
+                science: '這是效率最高的運動之一，做一下抵過慢跑好幾分鐘。',
+                duration: 60 
+            },
+            { 
+                id: 'a5', type: 'A', title: '地獄波比跳', rarity: 'SR',
+                desc: '蹲下 -> 往後踢 -> 收腿 -> 跳起來。', 
+                modes: ['home'], 
+                coach_say: '這個真的很累，做完會升天，但是燃脂效果最頂！',
+                science: '全身都在動，運動完後身體還會持續燃燒熱量（後燃效應）。',
+                duration: 60 
+            },
+            { 
+                id: 'b1', type: 'B', title: '桌邊伏地挺身', rarity: 'R',
+                desc: '手撐著桌子邊緣（確認桌子不會動），身體呈直線做伏地挺身。', 
+                modes: ['office', 'home'],
+                coach_say: '核心收緊！練一下胸肌/手臂，看起來比較壯/結實。',
+                science: '不用趴在地板上也能練到上半身的力量。',
+                duration: 60 
+            },
+            { 
+                id: 'b2', type: 'B', title: '深蹲救屁股', rarity: 'N',
+                desc: '雙腳打開與肩同寬，屁股向後坐，膝蓋不要內夾。', 
+                modes: ['office', 'home'],
+                coach_say: '坐太久屁股會扁掉，快點蹲一下救回來！',
+                science: '腿部肌力之王，能促進生長激素分泌（可能會長高喔）。',
+                duration: 60 
+            },
+            { 
+                id: 'b10', type: 'B', title: '撐桌棒式', rarity: 'R',
+                desc: '手肘撐在桌上，身體挺直，肚子用力縮進去，撐住不動。', 
+                modes: ['office', 'home'],
+                coach_say: '忍住！肚子在發抖是正常的，那是肥肉在尖叫！',
+                science: '訓練深層核心肌群，讓你的腰比較不會痠。',
+                duration: 60 
+            },
+            { 
+                id: 'c1', type: 'C', title: '空氣椅子', rarity: 'SR',
+                desc: '背靠牆壁，大腿跟地板平行，假裝有坐椅子，撐住！', 
+                modes: ['office', 'formal', 'home'],
+                coach_say: '這是罰站進階版，大腿會酸到爆，撐住啊！',
+                science: '這能幫忙把血液裡的糖分抓進肌肉裡，才不會吃飽想睡覺。',
+                duration: 60 
+            },
+            { 
+                id: 'c8', type: 'C', title: '坐姿轉轉腰', rarity: 'N',
+                desc: '坐在椅子上，雙手抱胸，上半身左右轉到底。', 
+                modes: ['office', 'formal', 'home'],
+                coach_say: '轉一轉，順便看看後面的同學在幹嘛（誤）。',
+                science: '久坐最傷脊椎，轉一轉可以釋放腰部的壓力。',
+                duration: 60 
+            },
+        ];
 
-            // Load Stats
+        // --- 元件 ---
+
+        const DurationBtn = ({ min, onClick, themeColor }) => {
+            const colors = {
+                blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'hover:border-blue-500', badge: 'bg-blue-100' },
+                orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'hover:border-orange-500', badge: 'bg-orange-100' },
+                purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'hover:border-purple-500', badge: 'bg-purple-100' },
+                default: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'hover:border-indigo-500', badge: 'bg-indigo-100' }
+            };
+            
+            const c = colors[themeColor] || colors.default;
+
+            return (
+                <button 
+                    onClick={onClick}
+                    className={`relative group bg-white p-6 rounded-2xl shadow-md border-2 border-transparent ${c.border} hover:shadow-xl transition-all transform active:scale-95 flex flex-col items-center justify-center gap-2 duration-200`}
+                >
+                    <div className={`absolute top-0 right-0 ${c.badge} ${c.text} text-xs font-bold px-2 py-1 rounded-bl-xl rounded-tr-xl`}>
+                        +{min * 10} XP
+                    </div>
+                    <div className={`${c.bg} p-4 rounded-full ${c.text} group-hover:scale-110 transition-transform duration-300`}>
+                        <Timer size={32} />
+                    </div>
+                    <div className="text-2xl font-black text-gray-800">{min} <span className="text-sm font-medium text-gray-500">分鐘</span></div>
+                    <div className="text-xs text-gray-400 font-medium">{min} 個動作</div>
+                </button>
+            );
+        };
+
+        const ModeBtn = ({ mode, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`w-full p-5 rounded-2xl shadow-sm border-2 transition-all text-left flex items-center gap-4 group ${mode.color} hover:shadow-md transform active:scale-95 duration-200`}
+            >
+                <div className="bg-white/80 p-3 rounded-full group-hover:bg-white group-hover:scale-110 transition-all shadow-sm">
+                    {mode.icon}
+                </div>
+                <div>
+                    <h3 className="font-bold text-lg">{mode.label}</h3>
+                    <p className="text-xs opacity-70 font-medium">{mode.desc}</p>
+                </div>
+                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">
+                    <ChevronRight />
+                </div>
+            </button>
+        );
+
+        const HistoryItem = ({ record }) => (
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-3">
+                <div className="flex items-center gap-3">
+                    <div className="bg-green-100 text-green-600 p-2 rounded-lg">
+                        <CheckCircle size={20} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-gray-400">{record.date}</div>
+                        <div className="font-bold text-gray-800">{record.duration} 分鐘套餐</div>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <div className="text-xs text-gray-400">完成 {record.exercises} 個動作</div>
+                </div>
+            </div>
+        );
+
+        function App() {
+            const [gameState, setGameState] = useState('dashboard');
+            const [userStats, setUserStats] = useState({ streak: 3, focus: 45 });
+            const [history, setHistory] = useState([]); 
+            const [currentBenefit, setCurrentBenefit] = useState(SNACK_BENEFITS[0]);
+            const [selectedMode, setSelectedMode] = useState(null);
+            
+            const [playlist, setPlaylist] = useState([]);
+            const [currentIdx, setCurrentIdx] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(0);
+            const [isResting, setIsResting] = useState(false); 
+            const [timerActive, setTimerActive] = useState(false);
+
             useEffect(() => {
-                const saved = localStorage.getItem('snackMoveStats');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    // 檢查是否跨日，重置 dailyCount
-                    if (parsed.lastLogin !== new Date().toDateString()) {
-                        parsed.dailyCount = 0;
-                        parsed.lastLogin = new Date().toDateString();
-                        // 簡單的 Streak 邏輯 (這裡簡化處理)
-                        parsed.streak += 1;
-                    }
-                    setUserStats(parsed);
+                if (gameState === 'dashboard') {
+                    const randomIndex = Math.floor(Math.random() * SNACK_BENEFITS.length);
+                    setCurrentBenefit(SNACK_BENEFITS[randomIndex]);
                 }
-            }, []);
+            }, [gameState]);
 
-            // Save Stats
-            useEffect(() => {
-                localStorage.setItem('snackMoveStats', JSON.stringify(userStats));
-            }, [userStats]);
+            const chooseMode = (modeId) => {
+                setSelectedMode(modeId);
+                setGameState('select-duration');
+            };
 
-            // Timer Logic
+            const startWorkout = (minutes) => {
+                const pool = EXERCISE_DB.filter(ex => ex.modes.includes(selectedMode));
+                let shuffled = [...pool].sort(() => 0.5 - Math.random());
+                const selected = [];
+                while (selected.length < minutes) {
+                    if (shuffled.length === 0) {
+                        shuffled = [...pool].sort(() => 0.5 - Math.random());
+                    }
+                    selected.push(shuffled.pop());
+                }
+                
+                setPlaylist(selected);
+                setCurrentIdx(0);
+                setGameState('playing');
+                setIsResting(false); 
+                setTimeLeft(selected[0].duration);
+                setTimerActive(true);
+            };
+
+            const finishWorkout = () => {
+                const totalDuration = playlist.length;
+                const focusEarned = totalDuration * 10;
+
+                setUserStats(prev => ({
+                    streak: prev.streak, 
+                    focus: Math.min(100, prev.focus + focusEarned)
+                }));
+
+                const newRecord = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                    duration: totalDuration,
+                    exercises: totalDuration
+                };
+                setHistory(prev => [newRecord, ...prev]);
+
+                setGameState('result');
+                setTimerActive(false);
+            };
+
+            const nextExercise = () => {
+                if (currentIdx < playlist.length - 1) {
+                    setCurrentIdx(prev => prev + 1);
+                    setTimeLeft(playlist[currentIdx + 1].duration);
+                    setIsResting(false);
+                    setTimerActive(true);
+                } else {
+                    finishWorkout();
+                }
+            };
+
             useEffect(() => {
-                let interval;
-                if (isTimerRunning && timer > 0) {
+                let interval = null;
+                if (timerActive && timeLeft > 0 && !isResting) {
                     interval = setInterval(() => {
-                        setTimer((prev) => prev - 1);
+                        setTimeLeft((prev) => prev - 1);
                     }, 1000);
-                } else if (timer === 0 && isTimerRunning) {
-                    setIsTimerRunning(false);
-                    playBeep();
-                    setView('success');
-                    handleComplete();
+                } else if (timeLeft === 0 && timerActive && !isResting) {
+                    if (currentIdx < playlist.length - 1) {
+                        setIsResting(true);
+                        setTimeout(() => {
+                            nextExercise();
+                        }, 3000); 
+                    } else {
+                        finishWorkout();
+                    }
                 }
                 return () => clearInterval(interval);
-            }, [isTimerRunning, timer]);
+            }, [timerActive, timeLeft, isResting, currentIdx, playlist]);
 
-            const handleDrawCard = (mode) => {
-                setFilterMode(mode);
-                let pool = EXERCISE_DB;
+            // --- 視圖 ---
 
-                // 過濾邏輯
-                if (mode === 'office') {
-                    // 辦公室模式：排除地板動作、大汗動作、噪音動作
-                    pool = EXERCISE_DB.filter(ex => 
-                        !ex.tags.includes('floor') && 
-                        !ex.tags.includes('sweat') && 
-                        !ex.tags.includes('noise')
-                    );
-                } else if (mode === 'stealth') {
-                    // 隱密模式：只選極低干擾
-                    pool = EXERCISE_DB.filter(ex => ex.tags.includes('stealth') || ex.tags.includes('quiet'));
-                }
-                // Home 模式 = 全部
-
-                const randomCard = pool[Math.floor(Math.random() * pool.length)];
-                setCurrentCard(randomCard);
-                setView('gacha');
-                
-                // 翻牌動畫
-                setTimeout(() => setShowFlip(true), 100);
-            };
-
-            const startExercise = () => {
-                setTimer(currentCard.duration);
-                setIsTimerRunning(true);
-                setView('active');
-            };
-
-            const handleComplete = () => {
-                const xpGain = currentCard.intensity * 20; // 簡單 XP 計算
-                setUserStats(prev => {
-                    const newXp = prev.xp + xpGain;
-                    const newLevel = Math.floor(newXp / 100) + 1;
-                    return {
-                        ...prev,
-                        xp: newXp,
-                        level: newLevel,
-                        dailyCount: prev.dailyCount + 1
-                    };
-                });
-            };
-
-            const resetToDashboard = () => {
-                setShowFlip(false);
-                setView('dashboard');
-            };
-
-            // --- Sub-Components (Inline for single file) ---
-
-            // Icon Helper
-            const CardIcon = ({ name, size=24, color="currentColor" }) => {
-                const LucideIcon = lucide[name] || lucide.Star;
-                return React.createElement(LucideIcon, { size, color });
-            };
-
-            // 1. Dashboard View
-            if (view === 'dashboard') {
-                const progress = (userStats.dailyCount / 3) * 100;
-                
+            if (gameState === 'dashboard') {
                 return (
-                    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-white shadow-xl overflow-hidden relative">
-                        {/* Header */}
-                        <div className="bg-indigo-600 p-6 pb-12 rounded-b-3xl text-white shadow-lg z-10">
-                            <div className="flex justify-between items-center mb-4">
-                                <div>
-                                    <h1 className="text-2xl font-bold">早安，戰士！</h1>
-                                    <p className="text-indigo-200 text-sm">LV.{userStats.level} | 連續登入 {userStats.streak} 天</p>
-                                </div>
-                                <div className="bg-white/20 p-2 rounded-full">
-                                    <User size={24} />
-                                </div>
+                    <div className="min-h-screen bg-yellow-50 p-4 font-sans max-w-md mx-auto flex flex-col animate-in fade-in duration-500">
+                        <header className="mb-6 flex justify-between items-start">
+                            <div className="flex-1">
+                                <h1 className="text-2xl font-black text-gray-800 flex items-start gap-2 leading-tight">
+                                    <Cookie className="text-orange-500 shrink-0 mt-1" /> 
+                                    <span>坐很久了嗎？想吃東西嗎？<br/><span className="text-lg font-bold text-gray-500">來點運動點心吧!</span></span>
+                                </h1>
                             </div>
-                            
-                            {/* XP Bar */}
-                            <div className="w-full bg-indigo-900/50 rounded-full h-2 mb-1">
-                                <div className="bg-yellow-400 h-2 rounded-full transition-all duration-500" style={{ width: `${userStats.xp % 100}%` }}></div>
-                            </div>
-                            <div className="flex justify-between text-xs text-indigo-200">
-                                <span>XP {userStats.xp % 100}/100</span>
-                                <span>下一級 +{100 - (userStats.xp % 100)}</span>
-                            </div>
-                        </div>
+                            <button 
+                                onClick={() => setGameState('history')}
+                                className="bg-white p-2 rounded-full shadow-sm border border-gray-200 text-gray-600 hover:text-indigo-600 shrink-0 hover:shadow-md transition-all active:scale-90"
+                            >
+                                <History size={24} />
+                            </button>
+                        </header>
 
-                        {/* Daily Mission Card */}
-                        <div className="px-6 -mt-8 relative z-20">
-                            <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-100">
-                                <div className="flex justify-between items-center mb-3">
-                                    <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                                        <Trophy size={18} className="text-yellow-500"/> 今日任務
-                                    </h2>
-                                    <span className="text-sm font-bold text-indigo-600">{userStats.dailyCount}/3</span>
-                                </div>
-                                <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
-                                    <div className="bg-indigo-500 h-full rounded-full transition-all duration-700" style={{width: `${Math.min(progress, 100)}%`}}></div>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-2 text-center">
-                                    {userStats.dailyCount >= 3 ? "今日目標達成！繼續保持！" : "再來幾塊點心，擊退久坐疲勞！"}
+                        <div className="bg-white p-4 rounded-xl shadow-md border-l-4 border-indigo-500 mb-6 flex gap-3 transform hover:scale-[1.02] transition-transform duration-300">
+                            <Lightbulb className="text-indigo-500 shrink-0" />
+                            <div>
+                                <div className="text-xs font-bold text-indigo-500 mb-1 uppercase tracking-wider">💡 點心冷知識</div>
+                                <p className="text-gray-700 text-sm font-medium leading-relaxed">
+                                    {currentBenefit}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Main Action Buttons */}
-                        <div className="flex-1 px-6 py-8 flex flex-col justify-center gap-4">
-                            <h3 className="text-gray-500 font-medium mb-2">選擇情境開始抽卡：</h3>
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Briefcase className="text-orange-600" />
+                                <h2 className="text-lg font-bold text-gray-800">你現在在哪裡？</h2>
+                            </div>
+                            <p className="text-gray-500 text-sm mb-6">選對地點，才不會被當成怪人。</p>
                             
-                            <button onClick={() => handleDrawCard('office')} className="group relative w-full bg-white border-2 border-green-100 hover:border-green-400 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4 text-left">
-                                <div className="bg-green-100 p-3 rounded-full text-green-600 group-hover:scale-110 transition-transform">
-                                    <Briefcase size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-800">辦公室模式</h4>
-                                    <p className="text-xs text-gray-500">低汗、不躺地、空間小</p>
-                                </div>
-                                <ChevronRight className="ml-auto text-gray-300" />
-                            </button>
-
-                            <button onClick={() => handleDrawCard('home')} className="group relative w-full bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4 text-left">
-                                <div className="bg-orange-100 p-3 rounded-full text-orange-600 group-hover:scale-110 transition-transform">
-                                    <Home size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-800">居家狂暴模式</h4>
-                                    <p className="text-xs text-gray-500">有氧、跳躍、地板動作</p>
-                                </div>
-                                <ChevronRight className="ml-auto text-gray-300" />
-                            </button>
-
-                            <button onClick={() => handleDrawCard('stealth')} className="group relative w-full bg-white border-2 border-blue-100 hover:border-blue-400 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4 text-left">
-                                <div className="bg-blue-100 p-3 rounded-full text-blue-600 group-hover:scale-110 transition-transform">
-                                    <Battery size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-800">隱形偷練模式</h4>
-                                    <p className="text-xs text-gray-500">開會中、極低動作幅度</p>
-                                </div>
-                                <ChevronRight className="ml-auto text-gray-300" />
-                            </button>
+                            <div className="space-y-4">
+                                <ModeBtn mode={MODES.OFFICE} onClick={() => chooseMode('office')} />
+                                <ModeBtn mode={MODES.HOME} onClick={() => chooseMode('home')} />
+                                <ModeBtn mode={MODES.FORMAL} onClick={() => chooseMode('formal')} />
+                            </div>
                         </div>
                     </div>
                 );
             }
 
-            // 2. Gacha Reveal View
-            if (view === 'gacha' && currentCard) {
-                const typeColor = currentCard.type === 'A' ? 'bg-orange-500' : currentCard.type === 'B' ? 'bg-blue-600' : 'bg-green-500';
-                
+            if (gameState === 'select-duration') {
+                const currentMode = MODES[selectedMode?.toUpperCase()];
+                const themeColor = currentMode?.theme || 'default';
+
                 return (
-                    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 perspective-1000 overflow-hidden">
-                        <div className={`relative w-full max-w-xs aspect-[3/4] transition-all duration-700 transform-style-3d cursor-pointer ${showFlip ? 'rotate-y-180' : ''}`} onClick={() => setShowFlip(true)}>
-                            
-                            {/* Card Back */}
-                            <div className="absolute inset-0 w-full h-full bg-indigo-600 rounded-3xl shadow-2xl flex items-center justify-center backface-hidden border-4 border-indigo-400">
-                                <div className="text-white text-center">
-                                    <Zap size={64} className="mx-auto mb-4 animate-pulse" />
-                                    <h2 className="text-2xl font-bold">點擊翻牌</h2>
+                    <div className="min-h-screen bg-yellow-50 p-4 font-sans max-w-md mx-auto flex flex-col animate-in slide-in-from-right duration-300">
+                        <header className="mb-6 flex items-center gap-2">
+                            <button 
+                                onClick={() => setGameState('dashboard')}
+                                className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 hover:shadow-md transition-all"
+                            >
+                                <ArrowLeft size={20} className="text-gray-600" />
+                            </button>
+                            <div className="flex items-center gap-2 text-gray-800">
+                                {currentMode?.icon}
+                                <h1 className="text-xl font-bold">
+                                    {currentMode?.label || '選擇時間'}
+                                </h1>
+                            </div>
+                        </header>
+
+                        <div className="flex-1 flex flex-col justify-center">
+                            <div className="text-center mb-8">
+                                <div className={`inline-block p-4 rounded-full mb-4 ${
+                                    themeColor === 'blue' ? 'bg-blue-100 text-blue-600' :
+                                    themeColor === 'orange' ? 'bg-orange-100 text-orange-600' :
+                                    themeColor === 'purple' ? 'bg-purple-100 text-purple-600' : 'bg-indigo-100 text-indigo-600'
+                                }`}>
+                                    <Clock size={40} />
                                 </div>
+                                <h2 className="text-2xl font-black text-gray-800">要尻多久？</h2>
+                                <p className="text-gray-500 mt-2">想稍微動一下，還是徹底清醒？<br/>每個動作 1 分鐘。</p>
                             </div>
 
-                            {/* Card Front */}
-                            <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-2xl backface-hidden rotate-y-180 flex flex-col overflow-hidden">
-                                {/* Card Header */}
-                                <div className={`${typeColor} p-6 text-white text-center relative`}>
-                                    <div className="absolute top-4 left-4 bg-white/20 px-2 py-1 rounded text-xs font-bold">TYPE {currentCard.type}</div>
-                                    <div className="mt-4">
-                                        <CardIcon name={currentCard.icon} size={48} className="mx-auto mb-2" />
-                                    </div>
-                                    <h2 className="text-2xl font-black">{currentCard.title}</h2>
-                                    <div className="flex justify-center gap-1 mt-2">
-                                        {[...Array(currentCard.intensity)].map((_, i) => <Star key={i} size={16} fill="white" />)}
-                                    </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <DurationBtn min={1} onClick={() => startWorkout(1)} themeColor={themeColor} />
+                                <DurationBtn min={3} onClick={() => startWorkout(3)} themeColor={themeColor} />
+                                <DurationBtn min={5} onClick={() => startWorkout(5)} themeColor={themeColor} />
+                                <DurationBtn min={10} onClick={() => startWorkout(10)} themeColor={themeColor} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'history') {
+                return (
+                    <div className="min-h-screen bg-yellow-50 p-4 font-sans max-w-md mx-auto animate-in slide-in-from-bottom duration-300">
+                        <header className="mb-6 flex items-center gap-3">
+                            <button onClick={() => setGameState('dashboard')} className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 transition-all">
+                                <RotateCcw size={20} />
+                            </button>
+                            <h1 className="text-xl font-bold text-gray-800">戰績一覽</h1>
+                        </header>
+
+                        {history.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                                <Calendar size={48} className="mb-4 opacity-20" />
+                                <p>目前還沒紀錄，快去動一動啦！</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {history.map(record => (
+                                    <HistoryItem key={record.id} record={record} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            if (gameState === 'playing' && playlist.length > 0) {
+                const currentCard = playlist[currentIdx];
+                const progress = ((currentCard.duration - timeLeft) / currentCard.duration) * 100;
+                const totalProgress = ((currentIdx) / playlist.length) * 100;
+
+                return (
+                    <div className="min-h-screen bg-gray-900 flex flex-col font-sans max-w-md mx-auto relative overflow-hidden animate-in fade-in duration-500">
+                        <div className="bg-gray-800 p-4 flex justify-between items-center z-10">
+                            <div className="text-white text-sm font-bold">
+                                關卡 {currentIdx + 1} <span className="text-gray-500">/ {playlist.length}</span>
+                            </div>
+                            <button onClick={() => setGameState('dashboard')} className="text-gray-500 hover:text-white transition-colors">
+                                <RotateCcw size={20} />
+                            </button>
+                        </div>
+                        <div className="w-full h-1 bg-gray-800">
+                            <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${totalProgress}%` }}></div>
+                        </div>
+
+                        {isResting ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-white animate-in zoom-in duration-300">
+                                <h2 className="text-4xl font-black mb-2 text-green-400">水啦！撐住了！</h2>
+                                <p className="text-gray-400 mb-8">下一個挑戰準備中...</p>
+                                <div className="text-xl font-bold">{playlist[currentIdx + 1]?.title}</div>
+                                <div className="mt-4 text-3xl font-mono animate-pulse">Ready...</div>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">
+                                <div className={`mb-6 px-3 py-1 rounded-full text-xs font-bold border ${
+                                    currentCard.type === 'A' ? 'text-red-400 border-red-400' : 
+                                    currentCard.type === 'B' ? 'text-blue-400 border-blue-400' : 'text-green-400 border-green-400'
+                                }`}>
+                                    {currentCard.type === 'A' ? '有氧刷心率' : currentCard.type === 'B' ? '肌力練線條' : '放鬆拉筋'}
                                 </div>
 
-                                {/* Card Body */}
-                                <div className="flex-1 p-6 flex flex-col justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-center mb-6 leading-relaxed">
-                                            {currentCard.desc}
-                                        </p>
-                                        
-                                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <Timer size={18} className="text-gray-400" />
-                                                <span className="font-bold text-gray-700">{currentCard.duration} 秒</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <Shield size={18} className="text-gray-400" />
-                                                <span className="font-bold text-gray-700">效果: {currentCard.buff}</span>
-                                            </div>
-                                        </div>
+                                <h2 className="text-3xl font-black text-white mb-4 leading-tight">{currentCard.title}</h2>
+                                
+                                <div className="relative mb-8">
+                                    <div className="text-[5rem] font-black font-mono text-white leading-none tabular-nums tracking-tighter">
+                                        {timeLeft}
                                     </div>
+                                    <div className="text-indigo-400 text-sm font-bold tracking-widest">秒</div>
+                                </div>
 
-                                    <button onClick={startExercise} className={`w-full ${typeColor} text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2`}>
-                                        開始挑戰 <ChevronRight size={20}/>
+                                <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 w-full text-left mb-8 transform transition-all hover:bg-white/20">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                        <span className="text-xs text-indigo-300 font-bold uppercase">教練碎碎念</span>
+                                    </div>
+                                    <p className="text-white text-md font-medium">"{currentCard.coach_say}"</p>
+                                </div>
+
+                                <div className="flex gap-4 w-full">
+                                    <button 
+                                        onClick={() => setTimerActive(!timerActive)}
+                                        className="flex-1 bg-gray-700 text-white py-4 rounded-xl font-bold hover:bg-gray-600 transition active:scale-95"
+                                    >
+                                        {timerActive ? '偷懶暫停' : '繼續拚'}
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setIsResting(true);
+                                            setTimeout(() => nextExercise(), 500); 
+                                        }}
+                                        className="bg-gray-800 text-gray-400 px-6 rounded-xl font-bold hover:bg-gray-700 hover:text-white transition active:scale-95"
+                                    >
+                                        跳過
                                     </button>
                                 </div>
+                                
+                                <p className="mt-8 text-gray-800 text-xl font-bold leading-relaxed bg-white/60 p-4 rounded-xl shadow-sm border border-gray-100">{currentCard.desc}</p>
                             </div>
-                        </div>
-                        <button onClick={resetToDashboard} className="mt-8 text-white/50 hover:text-white flex items-center gap-2">
-                            <X size={16} /> 稍後再做
-                        </button>
+                        )}
+
+                        {!isResting && (
+                            <div className="absolute bottom-0 left-0 w-full h-2 bg-gray-800">
+                                <div className="h-full bg-green-500 transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }}></div>
+                            </div>
+                        )}
                     </div>
                 );
             }
 
-            // 3. Active Timer View
-            if (view === 'active' && currentCard) {
-                const progress = ((currentCard.duration - timer) / currentCard.duration) * 100;
-                
+            if (gameState === 'result') {
                 return (
-                    <div className="min-h-screen bg-indigo-900 flex flex-col items-center justify-center p-6 text-white relative overflow-hidden">
-                        {/* Background Pulse Animation */}
-                        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl ${isTimerRunning ? 'animate-heartbeat' : ''}`}></div>
-
-                        <div className="z-10 text-center w-full max-w-md">
-                            <h3 className="text-indigo-200 mb-2">{currentCard.title}</h3>
+                    <div className="min-h-screen bg-indigo-600 p-6 flex flex-col items-center justify-center max-w-md mx-auto">
+                        <div className="bg-white rounded-3xl p-8 shadow-2xl w-full text-center animate-in zoom-in duration-300">
                             
-                            {/* Big Timer */}
-                            <div className="text-9xl font-black mb-8 font-mono tracking-tighter">
-                                {timer}
+                            <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white animate-bounce">
+                                <Trophy size={40} className="text-yellow-900" />
+                            </div>
+
+                            <h2 className="text-3xl font-black text-gray-800 mb-2">搞定啦！</h2>
+                            <p className="text-gray-500 mb-6">這組套餐做完，整個人都神清氣爽了。</p>
+
+                            <div className="bg-gray-50 p-6 rounded-2xl mb-6">
+                                <div className="text-gray-400 text-sm mb-1">本次運動時間</div>
+                                <div className="text-4xl font-black text-gray-800">{playlist.length} <span className="text-lg text-gray-500">分鐘</span></div>
                             </div>
                             
-                            <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm mb-8">
-                                <p className="text-lg font-medium animate-pulse">
-                                    {timer > 10 ? "保持呼吸，動作做確實！" : "最後衝刺！別停下來！"}
+                            <div className="bg-indigo-50 rounded-xl p-4 text-left border border-indigo-100 mb-6">
+                                <div className="flex gap-2 items-center mb-2">
+                                    <Brain className="text-indigo-600" size={18} />
+                                    <h4 className="font-bold text-indigo-900 text-sm">變強小知識</h4>
+                                </div>
+                                <p className="text-xs text-indigo-800 leading-relaxed">
+                                    {playlist[0]?.science}
                                 </p>
                             </div>
 
-                            {/* Controls */}
-                            <div className="flex gap-4 justify-center">
-                                <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="bg-white text-indigo-900 rounded-full p-6 shadow-lg active:scale-90 transition-transform">
-                                    {isTimerRunning ? <span className="font-bold text-xl">II 暫停</span> : <span className="font-bold text-xl">▶ 繼續</span>}
-                                </button>
-                                <button onClick={resetToDashboard} className="bg-transparent border border-white/30 text-white rounded-full p-6 hover:bg-white/10">
-                                    放棄
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Progress Bar at bottom */}
-                        <div className="absolute bottom-0 left-0 w-full h-2 bg-indigo-950">
-                            <div className="h-full bg-green-400 transition-all duration-1000 linear" style={{ width: `${progress}%` }}></div>
+                            <button 
+                                onClick={() => setGameState('dashboard')}
+                                className="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95"
+                            >
+                                回首頁
+                            </button>
                         </div>
                     </div>
                 );
             }
 
-            // 4. Success View
-            if (view === 'success' && currentCard) {
-                return (
-                    <div className="min-h-screen bg-green-500 flex flex-col items-center justify-center p-6 text-white text-center">
-                        <div className="bg-white/20 p-6 rounded-full mb-6 animate-bounce">
-                            <CheckCircle size={64} />
-                        </div>
-                        <h1 className="text-4xl font-black mb-2">挑戰成功！</h1>
-                        <p className="text-green-100 text-lg mb-8">運動點心已食用完畢</p>
-                        
-                        <div className="bg-white text-gray-800 rounded-2xl p-6 w-full max-w-xs shadow-xl mb-8 transform transition-all hover:scale-105">
-                            <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
-                                <span className="text-gray-500">獲得經驗</span>
-                                <span className="font-bold text-xl text-yellow-500">+{currentCard.intensity * 20} XP</span>
-                            </div>
-                             <div className="flex items-center justify-between">
-                                <span className="text-gray-500">獲得 Buff</span>
-                                <span className="font-bold text-indigo-600">{currentCard.buff}</span>
-                            </div>
-                        </div>
-
-                        <button onClick={resetToDashboard} className="w-full max-w-xs bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">
-                            回到首頁
-                        </button>
-                    </div>
-                );
-            }
-
-            return null;
-        };
+            return <div>Loading...</div>;
+        }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
