@@ -15,6 +15,9 @@
     <!-- 3. 引入 Babel (編譯器) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- 4. 引入 LINE LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
     <style>
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-in { animation: fadeIn 0.5s ease-out forwards; }
@@ -31,6 +34,11 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
+
+        // --- 請在此填入您的 LIFF ID ---
+        // 格式範例: "1657000000-AbCdEfGh"
+        // 如果沒有填入，網頁仍可運作，但 LINE 相關功能會失效
+        const LIFF_ID = ""; 
 
         // --- 內建圖示元件 ---
         const IconBase = ({ children, size = 24, className = "", ...props }) => (
@@ -73,12 +81,13 @@
             Gamepad2: (props) => <IconBase {...props}><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></IconBase>,
             Shirt: (props) => <IconBase {...props}><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></IconBase>,
             Dumbbell: (props) => <IconBase {...props}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></IconBase>,
+            Send: (props) => <IconBase {...props}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconBase>,
         };
 
         const { 
             Cookie, History, Lightbulb, Activity, Flame, Brain, Briefcase, Home, Sparkles, 
             ChevronRight, ArrowLeft, Clock, Timer, CheckCircle, RotateCcw, Trophy, Calendar,
-            BookOpen, Gamepad2, Shirt, Dumbbell
+            BookOpen, Gamepad2, Shirt, Dumbbell, Send
         } = Icons;
 
         // --- 資料庫設定 (國中生版本) ---
@@ -347,6 +356,27 @@
             const [currentBenefit, setCurrentBenefit] = useState(SNACK_BENEFITS[0]);
             const [selectedMode, setSelectedMode] = useState(null);
             
+            const [liffProfile, setLiffProfile] = useState(null);
+            const [isLiffReady, setIsLiffReady] = useState(false);
+
+            // 初始化 LIFF
+            useEffect(() => {
+                if (LIFF_ID && window.liff) {
+                    window.liff.init({ liffId: LIFF_ID })
+                        .then(() => {
+                            setIsLiffReady(true);
+                            if (window.liff.isLoggedIn()) {
+                                window.liff.getProfile().then(profile => {
+                                    setLiffProfile(profile);
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            console.error('LIFF Initialization failed', err);
+                        });
+                }
+            }, []);
+
             const [playlist, setPlaylist] = useState([]);
             const [currentIdx, setCurrentIdx] = useState(0);
             const [timeLeft, setTimeLeft] = useState(0);
@@ -405,6 +435,25 @@
                 setTimerActive(false);
             };
 
+            // 分享戰績到 LINE
+            const shareToLine = () => {
+                if (window.liff && window.liff.isLoggedIn()) {
+                    window.liff.sendMessages([
+                        {
+                            type: 'text',
+                            text: `我在「運動點心」完成了 ${playlist.length} 分鐘的訓練！快來跟我一起動一動！`
+                        }
+                    ]).then(() => {
+                        alert('戰績已發送！');
+                    }).catch((error) => {
+                        console.log('Error sending message:', error);
+                        alert('發送失敗，請確認是否從 LINE 開啟');
+                    });
+                } else {
+                    alert('請在 LINE 中開啟此網頁以使用分享功能');
+                }
+            };
+
             const nextExercise = () => {
                 if (currentIdx < playlist.length - 1) {
                     setCurrentIdx(prev => prev + 1);
@@ -444,7 +493,10 @@
                             <div className="flex-1">
                                 <h1 className="text-2xl font-black text-gray-800 flex items-start gap-2 leading-tight">
                                     <Cookie className="text-orange-500 shrink-0 mt-1" /> 
-                                    <span>坐很久了嗎？想吃東西嗎？<br/><span className="text-lg font-bold text-gray-500">來點運動點心吧!</span></span>
+                                    <span>
+                                        {liffProfile ? `Hi, ${liffProfile.displayName}!` : '坐很久了嗎？想吃東西嗎？'}
+                                        <br/><span className="text-lg font-bold text-gray-500">來點運動點心吧!</span>
+                                    </span>
                                 </h1>
                             </div>
                             <button 
@@ -478,6 +530,10 @@
                                 <ModeBtn mode={MODES.FORMAL} onClick={() => chooseMode('formal')} />
                                 <ModeBtn mode={MODES.BAND} onClick={() => chooseMode('band')} />
                             </div>
+                        </div>
+
+                        <div className="mt-8 text-center text-sm text-gray-500 font-bold pb-4">
+                            蕭宇超醫師 和你一起告別雲朵身材!
                         </div>
                     </div>
                 );
@@ -665,12 +721,26 @@
                                 </p>
                             </div>
 
-                            <button 
-                                onClick={() => setGameState('dashboard')}
-                                className="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95"
-                            >
-                                回首頁
-                            </button>
+                            <div className="flex gap-3 w-full">
+                                <button 
+                                    onClick={() => setGameState('dashboard')}
+                                    className="flex-1 bg-gray-200 text-gray-800 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-300 transition active:scale-95"
+                                >
+                                    回首頁
+                                </button>
+                                {isLiffReady && (
+                                    <button 
+                                        onClick={shareToLine}
+                                        className="flex-1 bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Send size={20} /> 傳送戰績
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="mt-8 text-center text-sm text-gray-400 font-bold pb-4">
+                                蕭宇超醫師 和你一起告別雲朵身材!
+                            </div>
                         </div>
                     </div>
                 );
