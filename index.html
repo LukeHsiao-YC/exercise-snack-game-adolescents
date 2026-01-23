@@ -66,18 +66,19 @@
             Clock: (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconBase>,
             Timer: (props) => <IconBase {...props}><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></IconBase>,
             CheckCircle: (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>,
-            RotateCcw: (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></IconBase>,
+            RotateCcw: (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></IconBase>,
             Trophy: (props) => <IconBase {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>,
             Calendar: (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>,
             BookOpen: (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>,
             Gamepad2: (props) => <IconBase {...props}><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></IconBase>,
             Shirt: (props) => <IconBase {...props}><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></IconBase>,
+            Dumbbell: (props) => <IconBase {...props}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></IconBase>,
         };
 
         const { 
             Cookie, History, Lightbulb, Activity, Flame, Brain, Briefcase, Home, Sparkles, 
             ChevronRight, ArrowLeft, Clock, Timer, CheckCircle, RotateCcw, Trophy, Calendar,
-            BookOpen, Gamepad2, Shirt
+            BookOpen, Gamepad2, Shirt, Dumbbell
         } = Icons;
 
         // --- 資料庫設定 (國中生版本) ---
@@ -116,6 +117,14 @@
                 desc: '動作小一點，避免尷尬', 
                 color: 'text-purple-600 bg-purple-50 border-purple-100 hover:border-purple-300',
                 theme: 'purple'
+            },
+            BAND: { 
+                id: 'band', 
+                label: '使用彈力帶', 
+                icon: <Dumbbell size={24} />, 
+                desc: '加上阻力，效果加倍', 
+                color: 'text-green-600 bg-green-50 border-green-100 hover:border-green-300',
+                theme: 'green'
             }
         };
 
@@ -224,6 +233,46 @@
                 science: '久坐最傷脊椎，轉一轉可以釋放腰部的壓力。',
                 duration: 60 
             },
+            { 
+                id: 'd1', type: 'B', title: '彈力帶二頭彎舉', rarity: 'SR',
+                desc: '踩著帶子，手心朝上，用力把帶子拉向肩膀。', 
+                modes: ['band'],
+                coach_say: '踩著帶子用力拉，練出你的小老鼠，穿短袖校服才帥氣。',
+                science: '二頭肌孤立訓練，讓手臂線條更明顯。',
+                duration: 60 
+            },
+            { 
+                id: 'd2', type: 'B', title: '彈力帶擴胸', rarity: 'R',
+                desc: '雙手拉著帶子兩端，平舉在胸前，用力往兩側拉開。', 
+                modes: ['band'],
+                coach_say: '拉開帶子像是在撕考卷(誤)，把駝背拉回來，看起來更有精神。',
+                science: '強化後三角肌與菱形肌，改善圓肩駝背。',
+                duration: 60 
+            },
+            { 
+                id: 'd3', type: 'B', title: '彈力帶螃蟹走', rarity: 'SR',
+                desc: '雙腳踩著帶子(或套膝蓋上)，半蹲姿勢像螃蟹一樣橫著走。', 
+                modes: ['band'],
+                coach_say: '屁股側邊會超酸！練好這邊，跑步才不會扭來扭去。',
+                science: '啟動臀中肌，穩定骨盆，是預防膝蓋受傷的神級動作。',
+                duration: 60 
+            },
+            { 
+                id: 'd4', type: 'B', title: '坐姿划船', rarity: 'R',
+                desc: '腳伸直勾著帶子，雙手拉著帶子往後縮，感覺背部夾緊。', 
+                modes: ['band'],
+                coach_say: '腳勾著帶子往後拉，練背肌，讓你坐得住冷板凳(X)書桌(O)。',
+                science: '訓練背闊肌，有助於維持良好的坐姿。',
+                duration: 60 
+            },
+            { 
+                id: 'd5', type: 'B', title: '彈力帶側平舉', rarity: 'R',
+                desc: '腳踩帶子中間，雙手抓兩端往兩側舉起，像大鵬展翅。', 
+                modes: ['band'],
+                coach_say: '想變成衣架子嗎？練肩膀就對了，穿制服會變超帥。',
+                science: '針對中三角肌訓練，增加肩膀寬度，改善視覺比例。',
+                duration: 60 
+            },
         ];
 
         // --- 元件 ---
@@ -233,6 +282,7 @@
                 blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'hover:border-blue-500', badge: 'bg-blue-100' },
                 orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'hover:border-orange-500', badge: 'bg-orange-100' },
                 purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'hover:border-purple-500', badge: 'bg-purple-100' },
+                green: { bg: 'bg-green-50', text: 'text-green-600', border: 'hover:border-green-500', badge: 'bg-green-100' },
                 default: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'hover:border-indigo-500', badge: 'bg-indigo-100' }
             };
             
@@ -426,6 +476,7 @@
                                 <ModeBtn mode={MODES.OFFICE} onClick={() => chooseMode('office')} />
                                 <ModeBtn mode={MODES.HOME} onClick={() => chooseMode('home')} />
                                 <ModeBtn mode={MODES.FORMAL} onClick={() => chooseMode('formal')} />
+                                <ModeBtn mode={MODES.BAND} onClick={() => chooseMode('band')} />
                             </div>
                         </div>
                     </div>
@@ -458,7 +509,8 @@
                                 <div className={`inline-block p-4 rounded-full mb-4 ${
                                     themeColor === 'blue' ? 'bg-blue-100 text-blue-600' :
                                     themeColor === 'orange' ? 'bg-orange-100 text-orange-600' :
-                                    themeColor === 'purple' ? 'bg-purple-100 text-purple-600' : 'bg-indigo-100 text-indigo-600'
+                                    themeColor === 'purple' ? 'bg-purple-100 text-purple-600' : 
+                                    themeColor === 'green' ? 'bg-green-100 text-green-600' : 'bg-indigo-100 text-indigo-600'
                                 }`}>
                                     <Clock size={40} />
                                 </div>
