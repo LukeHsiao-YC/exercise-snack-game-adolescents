@@ -1,25 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <!-- 回到健康大廳按鈕 -->
-<a href="https://lukehsiao-yc.github.io/for_healthy_children/" 
-   style="position: fixed; 
-          top: 20px; 
-          left: 20px; 
-          background-color: #f43f5e; 
-          color: white; 
-          padding: 10px 16px; 
-          border-radius: 50px; 
-          text-decoration: none; 
-          font-weight: bold; 
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-          z-index: 9999; 
-          display: flex; 
-          align-items: center; 
-          font-family: 'Noto Sans TC', sans-serif;
-          transition: transform 0.2s;">
-   <span style="margin-right: 6px; font-size: 18px;">🏠</span> 回到大廳
-</a>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>坐很久了嗎？想吃東西嗎？來點運動點心吧!</title>
@@ -49,6 +30,26 @@
     </style>
 </head>
 <body class="bg-yellow-50">
+    <!-- 回到健康大廳按鈕 (移到 body 內) -->
+    <a href="https://lukehsiao-yc.github.io/for_healthy_children/" 
+       style="position: fixed; 
+              top: 20px; 
+              left: 20px; 
+              background-color: #f43f5e; 
+              color: white; 
+              padding: 10px 16px; 
+              border-radius: 50px; 
+              text-decoration: none; 
+              font-weight: bold; 
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+              z-index: 9999; 
+              display: flex; 
+              align-items: center; 
+              font-family: 'Noto Sans TC', sans-serif;
+              transition: transform 0.2s;">
+       <span style="margin-right: 6px; font-size: 18px;">🏠</span> 回到大廳
+    </a>
+
     <div id="root"></div>
 
     <script type="text/babel">
@@ -169,7 +170,7 @@
                 id: 'c3', type: 'C', title: '雙手畫圈圈', rarity: 'N',
                 desc: '雙手平舉，像螺絲起子一樣轉圈圈，正轉反轉都要。', 
                 modes: ['office', 'formal', 'home'],
-                coach_say: '寫考卷寫到手斷掉？轉一下啦，超爽的！',
+                coach_say: '寫考卷寫到手快斷掉？轉一下啦！',
                 science: '讓肩膀關節動一動，預防以後變成五十肩（雖然你還早）。',
                 duration: 60 
             },
@@ -177,7 +178,7 @@
                 id: 'c9', type: 'C', title: '不管我也沒差', rarity: 'N',
                 desc: '肩膀用力聳起來找耳朵，停3秒，然後瞬間放鬆。', 
                 modes: ['office', 'formal', 'home'],
-                coach_say: '把段考壓力全部丟到地板上！誰管他啊！',
+                coach_say: '把壓力全部丟到地板上！誰管他啊！',
                 science: '這叫「漸進式肌肉放鬆」，能強制讓緊繃的肩膀鬆開。',
                 duration: 60 
             },
@@ -193,7 +194,7 @@
                 id: 'a9', type: 'A', title: '膝下擊掌', rarity: 'R',
                 desc: '抬高一腳膝蓋，雙手在該膝蓋下方拍手，左右輪流。', 
                 modes: ['home'], 
-                coach_say: '腿抬高！用力拍下去！像個過動兒一樣動起來！',
+                coach_say: '腿抬高！用力拍下去！動起來！',
                 science: '結合抬腿跟核心用力，心跳會變快，精神會變好。',
                 duration: 60 
             },
@@ -217,7 +218,7 @@
                 id: 'a5', type: 'A', title: '地獄波比跳', rarity: 'SR',
                 desc: '蹲下 -> 往後踢 -> 收腿 -> 跳起來。', 
                 modes: ['home'], 
-                coach_say: '這個真的很累，做完會升天，但是燃脂效果最頂！',
+                coach_say: '這個真的很累，但是燃脂效果最頂！',
                 science: '全身都在動，運動完後身體還會持續燃燒熱量（後燃效應）。',
                 duration: 60 
             },
@@ -249,7 +250,7 @@
                 id: 'c1', type: 'C', title: '空氣椅子', rarity: 'SR',
                 desc: '背靠牆壁，大腿跟地板平行，假裝有坐椅子，撐住！', 
                 modes: ['office', 'formal', 'home'],
-                coach_say: '這是罰站進階版，大腿會酸到爆，撐住啊！',
+                coach_say: '這是罰站進階版，大腿會超酸，撐住啊！',
                 science: '這能幫忙把血液裡的糖分抓進肌肉裡，才不會吃飽想睡覺。',
                 duration: 60 
             },
@@ -265,7 +266,7 @@
                 id: 'd1', type: 'B', title: '彈力帶二頭彎舉', rarity: 'SR',
                 desc: '踩著帶子，手心朝上，用力把帶子拉向肩膀。', 
                 modes: ['band'],
-                coach_say: '踩著帶子用力拉，練出你的小老鼠，穿短袖校服才帥氣。',
+                coach_say: '踩著帶子用力拉，練出你的小老鼠，穿短袖才帥氣。',
                 science: '二頭肌孤立訓練，讓手臂線條更明顯。',
                 duration: 60 
             },
@@ -273,7 +274,7 @@
                 id: 'd2', type: 'B', title: '彈力帶擴胸', rarity: 'R',
                 desc: '雙手拉著帶子兩端，平舉在胸前，用力往兩側拉開。', 
                 modes: ['band'],
-                coach_say: '拉開帶子像是在撕考卷(誤)，把駝背拉回來，看起來更有精神。',
+                coach_say: '拉開帶子，把駝背拉回來，看起來更有精神。',
                 science: '強化後三角肌與菱形肌，改善圓肩駝背。',
                 duration: 60 
             },
@@ -589,7 +590,7 @@
                                 }`}>
                                     <Clock size={40} />
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-800"快來試試看彈力帶運動"</h2>
+                                <h2 className="text-2xl font-black text-gray-800">快來挑戰</h2>
                                 <p className="text-gray-500 mt-2">想稍微動一下，還是徹底清醒？<br/>每個動作 1 分鐘。</p>
                             </div>
 
@@ -773,5 +774,3 @@
     </script>
 </body>
 </html>
-
-
